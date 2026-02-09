@@ -1,0 +1,7 @@
+{
+  "name": "worker",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- go run ./cmd/worker"
+  }
+}

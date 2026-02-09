@@ -1,0 +1,32 @@
+{
+  "name": "statuspulse",
+  "version": "1.0.0",
+  "description": "A mini datadog",
+  "homepage": "https://github.com/SamRawdon/StatusPulse#readme",
+  "bugs": {
+    "url": "https://github.com/SamRawdon/StatusPulse/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamRawdon/StatusPulse.git"
+  },
+  "author": "Sam Rawdon",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:all",
+    "dev:all": "concurrently -n api,worker,web --kill-others-on-fail \"npm run dev -w api\" \"npm run dev -w worker\" \"npm run dev -w web\"",
+    "dev:api": "npm run dev -w api",
+    "dev:worker": "npm run dev -w worker",
+    "dev:web": "npm run dev -w web",
+    "lint": "npm run lint -ws --if-present",
+    "typecheck": "npm run typecheck -ws --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0"
+  }
+}
