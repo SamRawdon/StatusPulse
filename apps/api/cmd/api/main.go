@@ -1,31 +1,32 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
-	"os"
+	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"statuspulse/apps/api/internal/config"
+	"statuspulse/apps/api/internal/db"
+	httpapi "statuspulse/apps/api/internal/http"
+	"statuspulse/apps/api/internal/store"
 )
 
 func main() {
-	addr := os.Getenv("API_ADDR")
-	if addr == "" {
-		addr = ":8080"
+	cfg := config.Load()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pool, err := db.Connect(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer pool.Close()
 
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	s := &store.Store{DB: pool}
+	api := &httpapi.API{Store: s}
 
-	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
-	})
-
-	log.Printf("api listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, r))
+	log.Printf("api listening on %s", cfg.Addr)
+	log.Fatal(http.ListenAndServe(cfg.Addr, httpapi.Router(api, cfg.CorsOrigin)))
 }
